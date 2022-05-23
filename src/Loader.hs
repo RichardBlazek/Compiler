@@ -2,6 +2,9 @@ module Loader (load) where
 
 import qualified Data.Map as Map
 import qualified Data.Tree as Tree
+import qualified Data.List as List
+import qualified Network.HTTP.Conduit as Http
+import qualified Data.ByteString.Lazy.Char8 as Char
 import qualified Scope
 import qualified Parser
 import qualified Semantics
@@ -17,16 +20,23 @@ data LoadedFile = LoadedFile File [String] [String]
 type Cache = Map.Map String LoadedFile
 type Dependencies = Map.Map String (Tree.Tree (String, File))
 
+readPath :: String -> IO String
+readPath p
+  | null path = return ""
+  | List.isPrefixOf "http://" path || List.isPrefixOf "https://" path = fmap Char.unpack $ Http.simpleHttp path
+  | otherwise = readFile path
+  where path = dropWhile (`elem` " \t\n\r\f\v") p
+
 loadFile :: Lang -> String -> FallibleIO LoadedFile
-loadFile PhpLang path = correct (readFile path) >>= \content -> return (LoadedFile (Php content) [] [])
+loadFile PhpLang path = correct (readPath path) >>= \content -> return (LoadedFile (Php content) [] [])
 loadFile ZybaLang path = do
-  content <- correct $ readFile path
+  content <- correct $ readPath path
   parsed@(Parser.File declarations) <- wrap $ Parser.parse content
-  let (zybas, phps) = map2 catMaybes catMaybes $ unzip $ map import' declarations
-  return $ LoadedFile (Zyba parsed) zybas phps
+  return $ uncurry (LoadedFile $ Zyba parsed) $ importsFrom declarations
   where import' (_, _, Parser.Import _ imported) = (Just imported, Nothing)
         import' (_, _, Parser.Php _ imported _) = (Nothing, Just imported)
         import' _ = (Nothing, Nothing)
+        importsFrom = map2 catMaybes catMaybes . unzip . map import'
 
 lookupCache :: Lang -> Cache -> String -> FallibleIO (Cache, LoadedFile)
 lookupCache lang cache path = case Map.lookup path cache of
