@@ -1,9 +1,9 @@
-module Language (Type (..), Builtin (..), builtinCall, fieldAccess, removeBuiltins, constants) where
+module Language (Type (..), Builtin (..), builtinCall, fieldAccess, removeBuiltins, types) where
 
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Fallible (Fallible (..), err, assert, assertJust)
-import Functions (join, split, swap, (??), zipMaps, intercalate, listify)
+import Functions (join, split, swapMap, (??), zipMaps, intercalate, listify)
 
 data Type = Void | Int | Bool | Real | Text | Db | Function [Type] Type | Dictionary Type Type | Vector Type | Record (Map.Map String Type) deriving (Eq, Ord)
 data Builtin = Add | Sub | Mul | Div | IntDiv | Rem | And | Or | Xor | Eq | Neq | Lt | Gt | Le | Ge | Pow | Not | AsInt | AsReal | AsBool | AsText
@@ -15,13 +15,11 @@ instance Show Type where
   show (Function ts t) = show t ++ ".fun[" ++ intercalate ", " (map show ts) ++ "]" 
   show (Dictionary k v) = show v ++ ".dict[" ++ show k ++ "]"
   show (Vector t) = show t ++ ".list"
-  show (Record m) = "{" ++ intercalate " " (map (\(k, v) -> k ++ " " ++ show v) (Map.toList m)) ++ "}"
-  show t = typesReversed Map.! t
-    where typesReversed = Map.fromList $ map swap $ Map.toList constants
+  show (Record m) = "(" ++ intercalate ", " (map (\(k, v) -> k ++ ": " ++ show v) (Map.toList m)) ++ ")"
+  show type' = swapMap types Map.! type'
 
 instance Show Builtin where
-  show builtin = builtinsReversed Map.! builtin
-    where builtinsReversed = Map.fromList $ map swap $ Map.toList builtins
+  show builtin = swapMap builtins Map.! builtin
 
 builtins :: Map.Map String Builtin
 builtins = Map.fromList [("+", Add), ("-", Sub), ("*", Mul), ("/", Div), ("//", IntDiv), ("%", Rem), ("&", And), ("|", Or), ("^", Xor), ("==", Eq), ("!=", Neq),
@@ -36,8 +34,8 @@ builtins = Map.fromList [("+", Add), ("-", Sub), ("*", Mul), ("/", Div), ("//", 
 builtinsSet :: Set.Set String
 builtinsSet = Map.keysSet builtins
 
-constants :: Map.Map String Type
-constants = Map.fromList [("void", Void), ("int", Int), ("bool", Bool), ("real", Real), ("text", Text), ("db", Db)]
+types :: Map.Map String Type
+types = Map.fromList [("void", Void), ("int", Int), ("bool", Bool), ("real", Real), ("text", Text), ("db", Db)]
 
 removeBuiltins :: Set.Set String -> Set.Set String
 removeBuiltins = (`Set.difference` builtinsSet)
@@ -68,15 +66,14 @@ getResultType line builtin args = case (builtin, args) of
   (Or, [Record f1, Record f2]) -> Right $ Record $ Map.union f2 f1
   (Xor, [Int, Int]) -> Right Int
   (Xor, [Bool, Bool]) -> Right Bool
-  (Eq, [Int, Int]) -> Right Bool
   (Eq, [Bool, Bool]) -> Right Bool
   (Eq, [Text, Text]) -> Right Bool
+  (Eq, [a, b]) | all (`elem` [Int, Real]) [a, b] -> Right Bool
   (Eq, [Vector v1, Vector v2]) -> getResultType line Eq [v1, v2]
   (Eq, [Dictionary k1 v1, Dictionary k2 v2]) -> getResultType line Eq [k1, k2] >> getResultType line Eq [v1, v2]
   (Eq, [Record f1, Record f2]) -> do
     mapM (getResultType line Eq) $ map (\(a, b) -> [a, b]) $ Map.elems $ zipMaps f1 f2
     Right Bool
-  (Eq, [a, b]) | any (== Real) [a, b] -> err line "Do not compare reals for equality. Learn more: https://stackoverflow.com/questions/1088216/whats-wrong-with-using-to-compare-floats-in-java"
   (Neq, compared) -> getResultType line Eq compared
   (Lt, [a, b]) | all (`elem` [Int, Real]) [a, b] -> Right Bool
   (Lt, [Text, Text]) -> Right Bool
@@ -122,6 +119,7 @@ getResultType line builtin args = case (builtin, args) of
   (Pad, [Text, Int, Text]) -> Right Text
   (Pad, [Text, Int, Text, Bool]) -> Right Text
   (Sort, Vector v : args) | args `elem` [[], [Bool], [Function [v, v] Int]] -> Right Void
+  (Join, [Vector v]) -> getResultType line AsText [v]
   (Join, [Vector v, Text]) -> getResultType line AsText [v]
   (Insert, [Vector v, Int, v2]) | v == v2 -> Right Void
   (Insert, [Vector v, Int, Vector v2]) | v == v2 -> Right Void
@@ -149,7 +147,7 @@ getResultType line builtin args = case (builtin, args) of
         itemType type' = err line $ "Expected a list or dict, got: " ++ show type'
     types <- mapM itemType collections
     assert (args == types) line $ "Values of lists must have types " ++ join ", " args
-    Right returnType
+    Right $ Vector returnType
   (Filter, [Text, Function [Text] Bool]) -> Right Text
   (Filter, [Vector v, Function [v2] Bool]) | v == v2 -> Right $ Vector v
   (Filter, [Dictionary k v, Function [v2] Bool]) | v == v2 -> Right $ Dictionary k v

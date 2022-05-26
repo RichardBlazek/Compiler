@@ -13,13 +13,13 @@ scope :: String -> Map.Map String Entry -> Scope
 scope = Scope
 
 empty :: String -> Scope
-empty = (`Scope` Map.map (Global Parser.Private) Lang.constants)
+empty = (`Scope` Map.map (Global Parser.Private) Lang.types)
 
 getWith :: Bool -> Integer -> [String] -> Scope -> Fallible (Lang.Type, String, String, [String])
 getWith onlyExported line (name : names) (Scope path scope) = case Map.lookup name scope of
   Just (Namespace Parser.Private _) | onlyExported -> err line $ "File '" ++ path ++ "' does not export " ++ name
   Just (Global Parser.Private _) | onlyExported -> err line $ "File '" ++ path ++ "' does not export " ++ name
-  Nothing -> err line $ "File '" ++ path ++ "' does not contain " ++ path
+  Nothing -> err line $ "File '" ++ path ++ "' does not contain " ++ name
   Just (Namespace _ _) | null names -> err line $ "Identifier '" ++ name ++ "' denotes a namespace, not a value"
   Just (Namespace _ scope') -> getWith True line names scope'
   Just (Global _ type') -> Right (type', name, path, names)

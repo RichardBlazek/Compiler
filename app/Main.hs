@@ -8,7 +8,7 @@ import Codegen (gen)
 import Fallible (unwrap)
 
 compile :: [String] -> IO ()
-compile (input : output : args) = unwrap (IO.hPutStrLn IO.stderr) (IO.writeFile output) (fmap (uncurry gen) $ load input) >>= id
+compile (input : output : _) = unwrap (IO.hPutStrLn IO.stderr) (IO.writeFile output) (fmap (uncurry gen) $ load input) >>= id
 compile _ = IO.hPutStrLn IO.stderr "Input or output file missing"
 
 main :: IO ()

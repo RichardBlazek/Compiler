@@ -9,7 +9,7 @@ data Token
   | Empty
   | LiteralReal Integer Integer Integer
   | LiteralInt Integer Integer
-  | LiteralText String
+  | LiteralText String Bool
   | LiteralBool Bool
   | Operator String
   | Separator Char
@@ -30,7 +30,7 @@ isSeparator = (`elem` "()[]{}:.")
 isWhite = (`elem` " \t\n\r\f\v,;")
 
 startToken :: Integer -> Char -> Fallible (Integer, Token)
-startToken line '"' = Right (line, LiteralText "")
+startToken line '"' = Right (line, LiteralText "" False)
 startToken line '#' = Right (line, Comment)
 startToken line char
   | isDigit 10 char = Right (line, LiteralInt 10 $ parseDigit char)
@@ -51,9 +51,9 @@ afterInt newLine line radix n c
 buildToken :: [(Integer, Token)] -> Char -> Fallible [(Integer, Token)]
 buildToken tokens@((line, _) : _) char = case tokens of
   (_, Comment) : rest -> Right $ (line', if char == '\n' then Empty else Comment) : rest
-  (_, Empty) : (_, LiteralText s) : rest | char == '"' -> Right $ (line', LiteralText $ '"' : reverse s) : rest
-  (_, LiteralText s) : rest | char == '"' -> Right $ (line', Empty) : (line, LiteralText $ reverse s) : rest
-  (_, LiteralText s) : rest -> Right $ (line', LiteralText $ char : s) : rest
+  (_, LiteralText s True) : rest | char == '"' -> Right $ (line, LiteralText ('"' : reverse s) False) : rest
+  (_, LiteralText s False) : rest | char == '"' -> Right $ (line, LiteralText (reverse s) True) : rest
+  (_, LiteralText s False) : rest -> Right $ (line', LiteralText (char : s) False) : rest
   (_, LiteralInt radix n) : rest -> fmap (++ rest) $ afterInt line' line radix n char
   (_, LiteralReal radix n exp) : rest | isDigit radix char -> Right $ (line', LiteralReal radix (radix * n + parseDigit char) $ exp + 1) : rest
   (_, Name name) : rest | isAlnum char -> Right $ (line', Name $ name ++ [char]) : rest

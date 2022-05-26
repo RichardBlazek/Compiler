@@ -44,7 +44,7 @@ parseMany parser end tokens = tailRec2M if' reverse tail else' [] tokens
 parseFactor :: [(Integer, Lexer.Token)] -> Fallible ((Integer, Value), [(Integer, Lexer.Token)])
 parseFactor ((line, Lexer.LiteralInt _ lit) : tokens) = Right ((line, Literal $ Int lit), tokens)
 parseFactor ((line, Lexer.LiteralReal _ n exp) : tokens) = Right ((line, Literal $ Real $ fromIntegral n / (10.0 ** fromIntegral exp)), tokens)
-parseFactor ((line, Lexer.LiteralText lit) : tokens) = Right ((line, Literal $ Text lit), tokens)
+parseFactor ((line, Lexer.LiteralText lit _) : tokens) = Right ((line, Literal $ Text lit), tokens)
 parseFactor ((line, Lexer.LiteralBool lit) : tokens) = Right ((line, Literal $ Bool lit), tokens)
 parseFactor ((line, Lexer.Name "fun") : tokens) = parseLambda line tokens
 parseFactor ((line, Lexer.Name name) : tokens) = Right ((line, Name [name]), tokens)
@@ -118,23 +118,23 @@ parseStatement ((line, Lexer.Name "for") : (_, Lexer.Name key) : (_, Lexer.Name 
 parseStatement ((line, Lexer.Name "return") : tokens) = fmap2 ((,) line . Return) id $ parseValue tokens
 parseStatement tokens@((line, _):_) = fmap2 ((,) line . Value) id $ parseValue tokens
 
-parseDeclaration :: [(Integer, Lexer.Token)] -> Fallible ((Integer, Visibility, Declaration), [(Integer, Lexer.Token)])
-parseDeclaration tokens@((line, Lexer.Name name) : _) = do
+parseDeclaration :: (String -> String) -> [(Integer, Lexer.Token)] -> Fallible ((Integer, Visibility, Declaration), [(Integer, Lexer.Token)])
+parseDeclaration convertPath tokens@((line, Lexer.Name name) : _) = do
   (tokens, export) <- return $ if name == "export" then (tail tokens, Exported) else (tokens, Private)
   fmap2 ((,,) line export) id $ case tokens of
-    (_, Lexer.Name "import") : (_, Lexer.Name name) : (_, Lexer.LiteralText path) : tokens -> Right (Import name path, tokens)
-    (_, Lexer.Name "import") : (_, Lexer.Name "php") : (_, Lexer.Name name) : (_, Lexer.LiteralText path) : tokens -> do
+    (_, Lexer.Name "import") : (_, Lexer.Name name) : (_, Lexer.LiteralText path _) : tokens -> Right (Import name $ convertPath path, tokens)
+    (_, Lexer.Name "import") : (_, Lexer.Name "php") : (_, Lexer.Name name) : (_, Lexer.LiteralText path _) : tokens -> do
       tokens <- expect (Lexer.Separator '(') tokens
       (imports, tokens) <- parseFields Map.empty tokens
-      Right (Php name path imports, tokens)
+      Right (Php name (convertPath path) imports, tokens)
     (_, Lexer.Name name) : tokens -> do
       tokens <- expect (Lexer.Operator "=") tokens
       (value, tokens) <- parseValue tokens
       Right (Declaration name value, tokens)
     (_, token) : _ -> err line $ "Expected a name to export but got " ++ show token
 
-parseDeclaration ((line, token) : _) = err line $ "Expected a name of declared function but got " ++ show token
+parseDeclaration convertPath ((line, token) : _) = err line $ "Expected a name of declared function but got " ++ show token
 
-parse :: String -> Fallible File
-parse input = Lexer.tokenize input >>= tailRecM (Right . null . snd) (Right . File . reverse . fst) else' . (,) []
-  where else' (result, tokens) = fmap2 (: result) id $ parseDeclaration tokens
+parse :: (String -> String) -> String -> Fallible File
+parse convertPath input = Lexer.tokenize input >>= tailRecM (Right . null . snd) (Right . File . reverse . fst) else' . (,) []
+  where else' (result, tokens) = fmap2 (: result) id $ parseDeclaration convertPath tokens

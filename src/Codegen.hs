@@ -106,6 +106,8 @@ genBuiltin Lang.Sort [array, reversed] [Lang.Vector _, Lang.Bool] = array ++ "->
 genBuiltin Lang.Sort [array, compare] _ = array ++ "->usortV(" ++ compare ++ ")"
 genBuiltin Lang.Join [array, separator] [Lang.Vector Lang.Text, Lang.Text] = "implode(" ++ separator ++ "," ++ array ++ "->a)"
 genBuiltin Lang.Join [array, separator] [Lang.Vector v, Lang.Text] = "implode(" ++ separator ++ ",array_map(" ++ array ++ "->a,'json_encode'))"
+genBuiltin Lang.Join [array] [Lang.Vector Lang.Text] = "implode(''," ++ array ++ "->a)"
+genBuiltin Lang.Join [array] [Lang.Vector v] = "implode('',array_map(" ++ array ++ "->a,'json_encode'))"
 genBuiltin Lang.Insert [array, index, values] [Lang.Vector v, _, Lang.Vector v2] | v == v2 = array ++ "->insertV(" ++ index ++ "," ++ values ++ "->a)"
 genBuiltin Lang.Insert [array, index, value] [Lang.Vector _, _, _] = array ++ "->insertV(" ++ index ++ ",[" ++ value ++ "])"
 genBuiltin Lang.Erase [array, index] [Lang.Vector _, _] = array ++ "->eraseV(" ++ index ++ ",1)"
@@ -183,7 +185,7 @@ genValue qual this (Lambda args block, Lang.Function _ returnType') = header ++ 
   where argNames = map ((qual this ++) . fst) args
         captured = intercalate "," $ Set.map ('&' :) $ Lang.removeBuiltins $ captures qual this (Set.fromList argNames) block []
         header = "function(" ++ intercalate "," argNames ++ ")" ++ (if null captured then "" else "use(" ++ captured ++ ")")
-genValue qual this (Access obj field, _) = genValue qual this obj ++ "[\"" ++ field ++ "\"]"
+genValue qual this (Access obj field, _) = genValue qual this obj ++ "->getD(\"" ++ field ++ "\")"
 genValue qual this (PhpValue name, _) = '$' : name
 
 genDeclaration :: (String -> String) -> String -> Declaration -> String
@@ -243,7 +245,7 @@ preamble quals = "<?php " ++ concat (map (\q -> concat $ map (q ++) ["int=0;", "
   \}\
   \public function getV($i){\
     \$c=count($this->a);\
-    \if(i>=$c||i<0){\
+    \if($i>=$c||$i<0){\
       \die('List of size '.$c.' does not have the index '.$i);\
     \}\
     \return $this->a[$i];\

@@ -17,6 +17,7 @@ dependencies:
 - mtl >= 2.2.2
 - http-conduit >= 2.3.8
 - bytestring >= 0.10.12
+- filepath >= 1.4.2.1
 
 library:
   source-dirs: src
