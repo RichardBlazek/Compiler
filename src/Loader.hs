@@ -3,8 +3,9 @@ module Loader (load) where
 import qualified Data.Map as Map
 import qualified Data.Tree as Tree
 import qualified Data.List as List
-import qualified Network.HTTP.Conduit as Http
-import qualified Data.ByteString.Lazy.Char8 as Char
+import qualified Network.HTTP.Simple as Http
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Enc
 import qualified System.FilePath as Path
 import qualified Scope
 import qualified Parser
@@ -27,7 +28,7 @@ isWeb path = List.isPrefixOf "http://" path || List.isPrefixOf "https://" path
 readPath :: String -> IO String
 readPath p
   | null path = return ""
-  | isWeb path = fmap Char.unpack $ Http.simpleHttp path
+  | isWeb path = fmap (Text.unpack . Enc.decodeUtf8 . Http.getResponseBody) $ Http.parseRequest path >>= Http.httpBS
   | otherwise = readFile path
   where path = dropWhile (`elem` " \t\n\r\f\v") p
 

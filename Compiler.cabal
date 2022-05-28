@@ -39,11 +39,11 @@ library
       src
   build-depends:
       base >=4.7 && <5
-    , bytestring >=0.10.12
     , containers >=0.6.2.1
     , filepath >=1.4.2.1
     , http-conduit >=2.3.8
     , mtl >=2.2.2
+    , text >=1.2.4.1
   default-language: Haskell2010
 
 executable Compiler-exe
@@ -56,9 +56,9 @@ executable Compiler-exe
   build-depends:
       Compiler
     , base >=4.7 && <5
-    , bytestring >=0.10.12
     , containers >=0.6.2.1
     , filepath >=1.4.2.1
     , http-conduit >=2.3.8
     , mtl >=2.2.2
+    , text >=1.2.4.1
   default-language: Haskell2010

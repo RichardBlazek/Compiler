@@ -1,6 +1,7 @@
 .stack-work/
 .vscode/
-example/
+example/index.zyba
+example/style.css
 dist-newstyle/
 *~
 docs/*.gz

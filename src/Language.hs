@@ -132,7 +132,7 @@ getResultType line builtin args = case (builtin, args) of
   (Find, [Vector v, v2]) | v == v2 -> Right Int
   (Find, [Dictionary k v, v2]) | v == v2 -> Right k
   (AsList, [Text]) -> Right $ Vector Text
-  (AsList, [Dictionary k v]) -> Right $ Record $ Map.fromList [("key", k), ("value", v)]
+  (AsList, [Dictionary k v]) -> Right $ Vector $ Record $ Map.fromList [("key", k), ("value", v)]
   (AsDict, [Vector v]) -> do
     let fieldsOf (Record fields) = Right fields
         fieldsOf type' = err line $ "Expected a record, got " ++ show type'

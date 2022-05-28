@@ -81,7 +81,7 @@ genBuiltin Lang.AsBool [a] [Lang.Text] = "(" ++ a ++ "!=='')"
 genBuiltin Lang.AsBool [a] [_] = "(bool)" ++ a
 genBuiltin Lang.AsReal [a] [_] = "(float)" ++ a
 genBuiltin Lang.AsText [a] [_] = "json_encode(" ++ a ++ ")"
-genBuiltin Lang.Dict (_ : _ : args) _ = "z1array::n([" ++ intercalate "," (map (\(k, v) -> k ++ "=>" ++ v) $ fst $ split args) ++ "])"
+genBuiltin Lang.Dict (_ : _ : args) _ = "z1array::n([" ++ intercalate "," (map (\(k, v) -> k ++ "=>" ++ v) $ reverse $ fst $ split args) ++ "])"
 genBuiltin Lang.List (_ : args) _ = "z1array::n([" ++ intercalate "," args ++ "])"
 genBuiltin Lang.Fun _ (returned : args) = genDefault $ Lang.Function args returned
 genBuiltin Lang.Get [array, index] [Lang.Vector _, _] = array ++ "->getV(" ++ index ++ ")"

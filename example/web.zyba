@@ -1,0 +1,43 @@
+import php internal "internal.php" (
+	__GET: text.dict[text]
+	echo: void.fun[text]
+)
+
+export args = internal.__GET
+export print = internal.echo
+
+formatLink = fun[link, caption: text] text {
+	"<a class=""button"" href=""?page=" + link + """>" + caption + "</a>"
+}
+
+export formatNavigation = fun[items: (menu: text, title: text, content: text).dict[text]] text {
+	"<div class=""navigation"">" + fun[item: (key: text, value: (menu: text, title: text, content: text))] text {
+		formatLink[item.key, item.value.menu]
+	}.map[items.asList].join + "</div>"
+}
+
+head = "<!DOCTYPE html><html>
+<head>
+	<title>Překladač programovacího jazyka Zyba</title>
+	<meta name=""charset"" content=""utf-8""/>
+	<meta name=""viewport"" content=""width=device-width,initial-scale=1""/>
+	<link rel=""stylesheet"" href=""style.css""/>
+</head>"
+
+export begining = fun[items: (menu: text, title: text, content: text).dict[text]] text{
+	head + "<body>" + formatNavigation[items] + "<div class=""main"">"
+}
+
+export end = "</div></body></html>"
+
+export formatPage = fun[page: (menu: text, title: text, content: text)] text {
+	"<div class=""card"">" + "<h1>" + page.title + "</h1>" + page.content + "</div>"
+}
+
+export formatList = fun[items: text.list] text {
+	"<ul><li>" + items.join["</li><li>"] + "</li></ul>"
+}
+
+export formatCode = fun[code: text] text {
+	"<div class=""code"">" + code + "</div>"
+}

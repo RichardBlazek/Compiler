@@ -36,7 +36,7 @@ expect :: Lexer.Token -> [(Integer, Lexer.Token)] -> Fallible [(Integer, Lexer.T
 expect e [] = err (-1) $ "Expected " ++ show e ++ ", reached the EOF"
 expect e ((line, l) : ts) = if l == e then return ts else err line $ "Expected " ++ show e ++ ", got " ++ show l
 
-parseMany :: ([(Integer, Lexer.Token)] -> Fallible (a, [(Integer, Lexer.Token)])) -> Lexer.Token -> [(Integer, Lexer.Token)] -> Fallible ([a], [(Integer, Lexer.Token)])
+parseMany :: Show a => ([(Integer, Lexer.Token)] -> Fallible (a, [(Integer, Lexer.Token)])) -> Lexer.Token -> [(Integer, Lexer.Token)] -> Fallible ([a], [(Integer, Lexer.Token)])
 parseMany parser end tokens = tailRec2M if' reverse tail else' [] tokens
   where if' result tokens = assert (not $ null tokens) (-1) "Unexpected end of file" >> Right (snd (head tokens) == end)
         else' result tokens = fmap2 (: result) id $ parser tokens
