@@ -1,0 +1,99 @@
+import web "web.zyba"
+
+pages = (menu: text, title: text, content: text).dict[text
+	"introduction" (
+		menu: "ÚVOD",
+		title: "Cíle práce",
+		content: web.formatList[text.list["Vyřešit nepříjemnosti s PHP", "Navrhnout vlastní programovací jazyk Zyba", "Napsat překladač ze Zyby do PHP"]]
+	),
+	"description" (
+		menu: "JAZYK",
+		title: "Co Zyba umí",
+		content: web.formatList[text.list["Statické typování s typovou inferencí", "Imperativní i funkcionální programování", "Pole, slovníky, záznamy, lambda funkce", "Moduly, možnost zvolit co exportovat, jmenné prostory", "Importy z PHP i z webu"]]
+	),
+	"compiler" (
+		menu: "PŘEKLADAČ",
+		title: "Jak se překládá",
+		content: web.formatList[text.list["Lexikální a syntaktická analýza", "Sémantická analýza a typová kontrola", "Vyřešení importů a závislostí mezi moduly", "Generování PHP kódu"]]
+	),
+	"example" (
+		menu: "UKÁZKA",
+		title: "Zyba v akci",
+		content: web.formatCode["
+			import web ""web.zyba""<br/><br/>
+			pages = (menu: text, title: text, content: text).dict[text<br/>
+			<div class=""indent"">
+				""introduction"" (<br/>
+				<div class=""indent"">
+					menu: ""ÚVOD"",<br/>
+					title: ""Cíle práce"",<br/>
+					content: web.formatList[text.list[""Vyřešit nepříjemnosti s PHP"", ""Navrhnout vlastní programovací jazyk Zyba"", ""Napsat překladač ze Zyby do PHP""]]<br/>
+				</div>
+				),<br/>
+				""description"" (<br/>
+				<div class=""indent"">
+					menu: ""JAZYK"",<br/>
+					title: ""Co Zyba umí"",<br/>
+					content: web.formatList[text.list[""Statické typování s typovou inferencí"", ""Imperativní i funkcionální programování"", ""Pole, slovníky, záznamy, lambda funkce"", ""Moduly, možnost zvolit co exportovat, jmenné prostory"", ""Importy z PHP i z webu""]]<br/>
+				</div>
+				),<br/>
+				""compiler"" (<br/>
+				<div class=""indent"">
+					menu: ""PŘEKLADAČ"",<br/>
+					title: ""Jak se překládá"",<br/>
+					content: web.formatList[text.list[""Lexikální a syntaktická analýza"", ""Sémantická analýza a typová kontrola"", ""Vyřešení importů a závislostí mezi moduly"", ""Generování PHP kódu""]]<br/>
+				</div>
+				),<br/>
+				""example"" (<br/>
+				<div class=""indent"">
+					menu: ""UKÁZKA"",<br/>
+					title: ""Zyba v akci"",<br/>
+					content: web.formatCode[""(...)""]<br/>
+				</div>
+				),<br/>
+				""conclusion"" (<br/>
+				<div class=""indent"">
+					menu: ""ZÁVĚR"",<br/>
+					title: ""Co si z toho odnést"",<br/>
+					content: ""(...)""<br/>
+				</div>
+				)<br/>
+		</div>]
+		<br/><br/>
+		getPageId = fun[] text {<br/>
+		<div class=""indent"">
+			if web.args.has[""page""] & pages.has[web.args.get[""page""]] {<br/>
+			<div class=""indent"">
+				return web.args.get[""page""]<br/>
+			</div>
+			}<br/>
+			return ""introduction""<br/>
+		</div>
+		}<br/><br/>
+		main = fun[] void {<br/>
+		<div class=""indent"">
+			web.print[web.begining[pages]]<br/>
+			web.print[web.formatPage[pages.get[getPageId[]]]]<br/>
+			web.print[web.end]<br/>
+		</div>
+		}"]
+	),
+	"conclusion" (
+		menu: "ZÁVĚR",
+		title: "Co si z toho odnést",
+		content: web.formatList[text.list["Zyba umí dost věcí na to, abyste mohli vidět tuto prezentaci", "Typová inference, imperativní i funkcionální programování, moduly", "Další vývoj &ndash; interoperabilita s PHP, generické programování"]]
+	)
+]
+
+getPageId = fun[] text {
+	if web.args.has["page"] & pages.has[web.args.get["page"]] {
+		return web.args.get["page"]
+	}
+	return "introduction"
+}
+
+main = fun[] void {
+	web.print[web.begining[pages]]
+	web.print[web.formatPage[pages.get[getPageId[]]]]
+	web.print[web.end]
+}

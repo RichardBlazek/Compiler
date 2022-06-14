@@ -25,10 +25,10 @@ head = "<!DOCTYPE html><html>
 </head>"
 
 export begining = fun[items: (menu: text, title: text, content: text).dict[text]] text{
-	head + "<body>" + formatNavigation[items] + "<div class=""main"">"
+	head + "<body>" + formatNavigation[items]
 }
 
-export end = "</div></body></html>"
+export end = "</body></html>"
 
 export formatPage = fun[page: (menu: text, title: text, content: text)] text {
 	"<div class=""card"">" + "<h1>" + page.title + "</h1>" + page.content + "</div>"

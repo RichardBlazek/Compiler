@@ -1,7 +1,5 @@
 .stack-work/
 .vscode/
-example/index.zyba
-example/style.css
 dist-newstyle/
 *~
 docs/*.gz

@@ -1,0 +1,44 @@
+\documentclass{beamer}
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{pmboxdraw}
+\usetheme {darmstadt}
+\date{}
+\title{Překladač programovacího jazyka Zyba}
+\author{Richard Blažek}
+\begin{document}
+\begin{frame}
+\titlepage
+\end{frame}
+\begin{frame}{Cíle práce}
+\begin{itemize}
+    \item Vyřešit nepříjemnosti s PHP
+    \item Navrhnout vlastní programovací jazyk Zyba
+    \item Napsat překladač ze Zyby do PHP
+\end{itemize}
+\end{frame}
+\begin{frame}{Co Zyba umí}
+\begin{itemize}
+    \item Statické typování s typovou inferencí
+    \item Imperativní i funkcionální programování
+    \item Pole, slovníky, záznamy, lambda funkce
+    \item Moduly, možnost zvolit co exportovat, jmenné prostory
+    \item Importy z PHP i z webu
+\end{itemize}
+\end{frame}
+\begin{frame}{Jak se překládá}
+\begin{itemize}
+    \item Lexikální a syntaktická analýza
+    \item Sémantická analýza a typová kontrola
+    \item Vyřešení importů a závislostí mezi moduly
+    \item Generování PHP kódu
+\end{itemize}
+\end{frame}
+\begin{frame}{Co si z toho odnést}
+\begin{itemize}
+    \item Zyba umí dost věcí na to, abyste mohli vidět online prezentaci, kdyby fungoval internet
+    \item Další vývoj -- interoperabilita s PHP, generické programování
+    \item Je lepší mít vždycky záložní plán
+\end{itemize}
+\end{frame}
+\end{document}

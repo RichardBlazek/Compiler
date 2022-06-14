@@ -1,0 +1,73 @@
+*, ::before, ::after {
+	box-sizing: inherit;
+}
+html, body {
+	font-family: Verdana,sans-serif;
+	font-size: 15px;
+	line-height: 1.5;
+	margin: 0;
+}
+h1 {
+	font-size: 36px;
+	font-family: Verdana,sans-serif;
+	font-weight: 400;
+	margin: 10px 0;
+}
+ul {
+	list-style-position: inside;
+	padding-left: 16px;
+}
+li {
+	font-size: 18px;
+	margin: 5px 0;
+}
+.code {
+	font-family: Consolas,"courier new";
+	font-size: 16px;
+	border-left: 4px solid #4080FF;
+	margin: 16px 0;
+	width: auto;
+	background-color: #fff;
+	padding: 8px 12px;
+	word-wrap: break-word;
+}
+.indent {
+	margin-left: 32px;
+}
+.navigation {
+	background-color: #4080FF;
+	font-size: 18px;
+	width: 100%;
+	overflow: hidden;
+}
+.button {
+	background-color: #4080FF;
+	color: #FFF;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	border: none;
+	display: inline-block;
+	padding: 16px;
+	vertical-align: middle;
+	overflow: hidden;
+	text-decoration: none;
+	text-align: center;
+	cursor: pointer;
+	white-space: nowrap;
+}
+.button:hover {
+	background-color: #FFF;
+	color: #000;
+}
+.card {
+	background-color: #F1F1F1;
+	color: #000;
+	padding: 24px;
+	box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19);
+	margin: 68px auto 8px auto;
+	max-width: 800px;
+}
